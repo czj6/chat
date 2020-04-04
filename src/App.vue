@@ -5,11 +5,11 @@
 
   </el-container> -->
 
-  <el-container style="height: 500px; border: 1px solid #eee">
+  <el-container style=" border: 1px solid #eee">
   <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
       <i class="fa fa-qq fa-2x icon1" aria-hidden="true"></i>
       <router-link to="/home"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
-      <i class="fa fa-user fa-2x icon3" aria-hidden="true"></i>
+      <router-link to="/user"><i class="fa fa-user fa-2x icon3" aria-hidden="true"></i></router-link>
       <i class="fa fa-cog fa-2x icon4" aria-hidden="true"></i>
   </el-aside>
   <transition>
@@ -40,6 +40,9 @@ export default {
 }
 </script>
 <style scoped>
+.el-container{
+  height: 682px;
+}
 .el-aside{
   position: relative;
 }

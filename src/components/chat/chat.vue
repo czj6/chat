@@ -10,7 +10,7 @@
         </p>
       </span>
       <span class="header_icons">
-        <i class="fa fa-search fa-1x" aria-hidden="true"></i>
+        <i class="fa fa-search fa-1x" aria-hidden="true" @click="search_flag=!search_flag"></i>
         <i class="fa fa-share fa-1x" aria-hidden="true"></i>
         <!-- <i class="fa fa-chevron-circle-down fa-1x" aria-hidden="true"></i> -->
         <el-dropdown trigger="click"  @command="handleCommand">
@@ -24,6 +24,30 @@
     </el-header>
 
     <el-main>
+      <el-input
+        placeholder="请输入内容"
+        prefix-icon="el-icon-search"
+        v-show="search_flag"
+       >
+      </el-input>
+      <div class="container">
+        <div class="item right">
+           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+          <div>1</div>
+        </div>
+        <div class="item left">
+           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+          <div>3333333333333333333333333333333333333333333333333333333333333332</div>
+        </div>
+        <div class="item right">
+           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+          <div>3</div>
+        </div>
+        <div class="item left">
+           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+          <div>4</div>
+        </div>
+    </div>
     </el-main>
     <el-footer>
       <el-input type="textarea" autosize placeholder="请输入内容" v-model="textarea">
@@ -63,7 +87,8 @@ export default {
     data(){
       return {
           flag:false,
-          textarea:''
+          textarea:'',
+          search_flag:false
       }
     },
     methods:{
@@ -73,7 +98,7 @@ export default {
       handleCommand(command) {
         // this.$message('click on item ' + command);
         this.flag = !this.flag
-      }
+      },
     }
 }
 </script>
@@ -121,5 +146,31 @@ export default {
 }
 .el-textarea{
   width: 70%;
+}
+.container {
+    width: 100%;
+    height: 400px;
+    border: 1px solid black;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start
+}
+
+.right {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.left {
+    flex-basis: 100%;
+}
+
+.item div {
+    display: inline-block;
+    max-width: 20%;
+    word-wrap: break-word;
+    word-break: break-all;
+    background-color: yellow;
 }
 </style>
