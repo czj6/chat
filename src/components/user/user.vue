@@ -53,8 +53,8 @@
           <h5>Avatar</h5>
           <div class="text item">
             <el-input placeholder="请输入内容"></el-input>
-
           </div>
+          <el-button type="primary" round size="medium">Save</el-button>
         </el-card>
        </el-main>
      </el-container>
@@ -72,7 +72,12 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style>
+h5{
+  margin: 0;
+  padding: 0;
+  margin: 6px 0;
+}
  .clearfix:before,
   .clearfix:after {
     display: table;
@@ -85,4 +90,11 @@ export default {
     width: 50%;
     margin: 0 auto;
   }
+  .box-card-account .item,.upload-demo,.el-upload__text,.upload-demo div{
+    width: 100% !important;
+  }
+.el-button--medium{
+  width: 100%;
+  margin: 10px 0;
+}
 </style>

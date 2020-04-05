@@ -8,8 +8,9 @@
   <el-container style=" border: 1px solid #eee">
   <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
       <i class="fa fa-qq fa-2x icon1" aria-hidden="true"></i>
-      <router-link to="/home"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
-      <router-link to="/user"><i class="fa fa-user fa-2x icon3" aria-hidden="true"></i></router-link>
+      <router-link to="/edit" class="edit" tag="span"><i class="el-icon-edit-outline icon5"></i></router-link>
+      <router-link to="/home" tag="span"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
+      <router-link to="/user" tag="span"><i class="fa fa-user fa-2x icon3" aria-hidden="true"></i></router-link>
       <i class="fa fa-cog fa-2x icon4" aria-hidden="true"></i>
   </el-aside>
   <transition>
@@ -53,7 +54,7 @@ export default {
 }
 .el-aside .icon2{
   position: absolute;
-  top: 40%;
+  top: 42%;
   left: 39%;
 }
 .el-aside .icon3{
@@ -65,6 +66,16 @@ export default {
   position: absolute;
   top: 90%;
   left: 39%;
+}
+.el-aside .edit{
+  font-size: 32px;
+}
+.el-aside .icon5{
+  position: absolute;
+  top: 30%;
+  left: 39%;
+  width: 32px;
+  height: 32px;
 }
   .el-aside {
     color: #333;
