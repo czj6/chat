@@ -4,6 +4,7 @@ import HelloWorld from '@/components/HelloWorld'
 import Chat from '../components/chat/chat.vue'
 import User from '../components/user/user.vue'
 import Edit from '../components/edit/edit.vue'
+import ChatDefault from '../components/chat/chat_default.vue'
 
 Vue.use(Router)
 
@@ -16,8 +17,8 @@ export default new Router({
         // },
         {
             path: '/home',
-            name: 'Chat',
-            component: Chat
+            name: 'ChatDefault',
+            component: ChatDefault
         },
         {
             path: '/user',
@@ -28,6 +29,11 @@ export default new Router({
             path: '/edit',
             name: 'Edit',
             component: Edit
+        },
+        {
+            path: '/home/:roomname',
+            name: 'roomname',
+            component: Chat
         }
 
     ]

@@ -30,29 +30,17 @@
         v-show="search_flag"
        >
       </el-input>
-      <div class="container">
-        <div class="item right">
+      <div class="container chat" v-scroll>
+        <div :class="[item.username==username?'right':'left']" v-for="item in chatText" :key="item.id">
            <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-          <div>1</div>
-        </div>
-        <div class="item left">
-           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-          <div>3333333333333333333333333333333333333333333333333333333333333332</div>
-        </div>
-        <div class="item right">
-           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-          <div>3</div>
-        </div>
-        <div class="item left">
-           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-          <div>4</div>
+          <div class="item">{{item.message}}</div>
         </div>
     </div>
     </el-main>
     <el-footer>
-      <el-input type="textarea" autosize placeholder="请输入内容" v-model="textarea">
+      <el-input autosize placeholder="请输入内容" v-model.trim="textarea">
       </el-input>
-      <el-button icon="el-icon-s-promotion" circle></el-button>
+      <el-button icon="el-icon-s-promotion" circle @click="sendMsg"></el-button>
     </el-footer>
   </el-container>
   <el-container class="group_info" v-show="flag">
@@ -88,7 +76,10 @@ export default {
       return {
           flag:false,
           textarea:'',
-          search_flag:false
+          search_flag:false,
+          roomname: this.$route.params.roomname,
+          chatText:'',
+          username:this.$store.getters.getName
       }
     },
     methods:{
@@ -99,6 +90,40 @@ export default {
         // this.$message('click on item ' + command);
         this.flag = !this.flag
       },
+      alert(str){
+      this.$message.error(str);
+      },
+      getChatText(){
+        this.$http.get('/apiv1/room/message/'+this.roomname).then(result => {
+          this.chatText = result.body.data
+        })
+      },
+      sendMsg(){
+        if(this.textarea === ''){
+          this.alert("发送的内容不能为空")
+          return;
+        }
+        var message = {
+          username:this.username,
+          roomname:this.roomname,
+          message:this.textarea
+        }
+        this.chatText.push(message)
+        this.$socket.emit('new message',JSON.stringify(message))
+      }
+    },
+    beforeMount(){
+      this.getChatText()
+    },
+    mounted() {
+      this.$socket.emit('connect',"ok")
+    },
+    sockets:{
+       message:function(msg){
+         console.log(msg)
+          var msg = JSON.parse(msg)
+          this.chatText.push(msg.data)
+      }
     }
 }
 </script>
@@ -144,16 +169,17 @@ export default {
 .group_info .el-footer{
   flex: 1;
 }
-.el-textarea{
-  width: 70%;
+.el-input{
+  width: 90%;
 }
 .container {
     width: 100%;
-    height: 400px;
+    height: 520px;
     border: 1px solid black;
     display: flex;
     flex-wrap: wrap;
-    align-content: flex-start
+    align-content: flex-start;
+    overflow-y: scroll;
 }
 
 .right {
@@ -166,11 +192,34 @@ export default {
     flex-basis: 100%;
 }
 
-.item div {
+.item{
     display: inline-block;
     max-width: 20%;
     word-wrap: break-word;
     word-break: break-all;
     background-color: yellow;
+}
+
+/*设置滚动条样式*/
+
+.chat::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width: 4px;
+    /*高宽分别对应横竖滚动条的尺寸*/
+    height: 4px;
+}
+
+.chat::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 5px;
+    /* -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); */
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.chat::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    /* -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); */
+    border-radius: 0;
+    background: rgba(0, 0, 0, 0.1);
 }
 </style>

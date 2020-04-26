@@ -4,8 +4,9 @@
     <h3>Creat group</h3>
     <el-input
         placeholder="请输入内容"
-        prefix-icon="el-icon-search"
+        v-model="searchRoom"
        >
+       <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
       </el-input>
   </el-header>
   <el-main>
@@ -22,23 +23,26 @@
       </el-upload>
       <h5>Name</h5>
       <el-input
-        placeholder="请输入内容"
-        clearable>
+        :placeholder="this.roomname"
+        clearable
+        v-model="roomname">
       </el-input>
       <h5>Topic</h5>
       <el-input
         placeholder="请输入内容"
-        clearable>
+        clearable
+         v-model="topic">
       </el-input>
       <h5>Description</h5>
       <el-input
         placeholder="请输入内容"
-        clearable>
+        clearable
+         v-model="roomdetail">
       </el-input>
     </div>
   </el-main>
   <el-footer>
-      <el-button type="primary">Creat group</el-button>
+      <el-button type="primary" @click="creatRoom">Creat group</el-button>
   </el-footer>
 </el-container>
 </template>
@@ -46,11 +50,78 @@
 export default {
   data(){
     return {
-      imageUrl: ''
+      imageUrl: '',
+      roomowner:'',
+      roomname:'',
+      roomdetail:'',
+      topic:'',
+      searchRoom:'',
     }
   },
   methods:{
+    creatRoom(){
+      if(this.roomname == ''){
+        this.alert()
+      }
+      else{
+        let test = {
+          roomowner: this.$store.getters.getName,
+          roomname: this.roomname,
+          roomdetail:this.roomdetail
+        }
+        this.$http.post("/apiv1/user/roomcreate",
+              JSON.stringify(test)
+            , {
+                emulateJSON: true
+            }).then(result => {
+                console.log(result.body)
+            })
+      }
+    },
+    alert(){
+      this.$message.error('名称不能为空');
+    },
+    search(){
+      var msg = {
+        roomname: this.searchRoom
+      }
+      // this.$socket.emit('join',JSON.stringify(msg))
+      this.$http.post("/apiv1/room/query",
+              JSON.stringify(msg)
+            , {
+                emulateJSON: true
+            }).then(result => {
+              console.log(result.body)
+                console.log(result)
+                if(result.body.status===1003){
+                  console.log('erro')
+                }else {
+                   var test = {
+                    username: this.$store.getters.getName,
+                    roomname : result.body.roomname
+                  }
+                  var roomname = this.searchRoom
+                  this.$socket.emit('join',JSON.stringify(test))
+                  this.$router.push({name:'roomname',params:{roomname}})
+                }
 
+
+            })
+    }
+  },
+  sockets: {
+        connect: function() {
+            console.log("ok")
+        },
+        message:function(data){
+            console.log(data)
+        },
+        customEmit: function (data) {
+            console.log('this method was fired by the socket server. eg: io.emit("customEmit", data)')
+        }
+    },
+  mounted(){
+    this.$socket.emit('connect',"ok")
   }
 }
 </script>
