@@ -5,6 +5,9 @@
 ## Build Setup
 
 ``` bash
+# 部署地址
+http://101.200.157.252/index
+
 # install dependencies
 npm install
 
