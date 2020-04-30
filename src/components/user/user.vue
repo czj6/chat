@@ -4,6 +4,8 @@
       <h3>Profile</h3>
        <el-input
         placeholder="请输入内容"
+        v-model="searchRoom"
+        @keyup.13 = "search"
        >
        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
        </el-input>
@@ -26,7 +28,7 @@
         <div class="detailBox">
           <div>
             <p>Email</p>
-            <p>{{this.$store.getters.getPhone}}</p>
+            <p>{{this.$store.getters.getEmail}}</p>
           </div>
           <div>
             <i class="el-icon-message"></i>
@@ -67,7 +69,7 @@
             </el-upload> -->
            <el-upload
               class="avatar-uploader"
-              :action="'/apiv1/user/avatar/'+this.username"
+              :action="'/apiv1/user/avatar/'+this.$store.getters.getName"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
               :before-upload="beforeAvatarUpload">
@@ -77,11 +79,11 @@
           </div>
           <h5>Name</h5>
           <div class="text item">
-            <el-input placeholder="请输入内容" v-model.trim="username"></el-input>
+            <el-input v-model.trim="username"></el-input>
           </div>
           <h5>Phone</h5>
           <div class="text item">
-            <el-input placeholder="请输入内容" v-model.trim="phone"></el-input>
+            <el-input  v-model.trim="phone"></el-input>
 
           </div>
           <h5>Email</h5>
@@ -101,17 +103,18 @@
 export default {
   data(){
     return {
-      username:'',
-      phone:'',
-      email:'',
-      imageUrl: '',
-      btnFlag:false,
+      username: this.$store.getters.getName,
+      phone: this.$store.getters.getPhone,
+      email: this.$store.getters.getEmail,
+      imageUrl: this.$store.getters.getImgUrl,
+      btnFlag:'',
       searchRoom:'',
       time: ''
     }
   },
   mounted(){
-      this.getTime()
+      this.getTime(),
+     this.setBtn()
   },
   methods:{
     savaData(){
@@ -142,12 +145,12 @@ export default {
                 console.log(result.body)
                 console.log(this.$store.getters.getName)
             })
-        this.btnFlag = true
         if(this.btnFlag == true){
           this.alert("success","修改成功")
         }
         else
         this.alert("success","注册成功")
+        this.btnFlag = true
       }
     },
     alert(state,str){
@@ -156,6 +159,13 @@ export default {
         message : str,
         type : state
       });
+    },
+     setBtn(){
+      if(this.username == ''){
+        this.btnFlag = false
+      }else{
+        this.btnFlag = true
+      }
     },
     getTime(){
       setInterval( () =>{
@@ -166,8 +176,13 @@ export default {
      handleAvatarSuccess(res, file) {
         this.imageUrl = URL.createObjectURL(file.raw);
         this.$store.commit("modifyImg",this.imageUrl)
+        console.log(this.imageUrl)
       },
       beforeAvatarUpload(file) {
+        if(this.username == ''){
+          this.alert('error',"请先注册用户，成功后再上传图片")
+          return;
+        }
         const isJPG = file.type === 'image/jpeg';
         const isLt2M = file.size / 1024 / 1024 < 2;
 

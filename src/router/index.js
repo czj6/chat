@@ -9,12 +9,10 @@ import ChatDefault from '../components/chat/chat_default.vue'
 Vue.use(Router)
 
 export default new Router({
-    routes: [
-        // {
-        //     path: '/',
-        //     name: 'HelloWorld',
-        //     component: HelloWorld
-        // },
+    routes: [{
+            path: '/',
+            redirect: '/User'
+        },
         {
             path: '/home',
             name: 'ChatDefault',

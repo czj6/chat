@@ -5,6 +5,7 @@
     <el-input
         placeholder="请输入内容"
         v-model="searchRoom"
+        @keyup.enter = "search"
        >
        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
       </el-input>
@@ -13,30 +14,33 @@
     <div class="edit-wrap">
       <h5>Photo</h5>
       <el-upload
-        class="upload-demo"
-        drag
-        action="https://jsonplaceholder.typicode.com/posts/"
-        multiple>
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <!-- <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div> -->
+              class="avatar-uploader"
+              :action="'/apiv1/room/avatar/'+this.roomname"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload">
+              <img v-if="imageUrl" :src="imageUrl" class="avatar">
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
       </el-upload>
       <h5>Name</h5>
       <el-input
         :placeholder="this.roomname"
         clearable
+        :disabled="inputFlag"
         v-model="roomname">
       </el-input>
       <h5>Topic</h5>
       <el-input
         placeholder="请输入内容"
         clearable
+        :disabled="inputFlag"
          v-model="topic">
       </el-input>
       <h5>Description</h5>
       <el-input
         placeholder="请输入内容"
         clearable
+        :disabled="inputFlag"
          v-model="roomdetail">
       </el-input>
     </div>
@@ -56,12 +60,13 @@ export default {
       roomdetail:'',
       topic:'',
       searchRoom:'',
+      inputFlag : false
     }
   },
   methods:{
     creatRoom(){
       if(this.roomname == ''){
-        this.alert()
+        this.alert('error','房间的名字不能为空')
       }
       else{
         let test = {
@@ -76,10 +81,16 @@ export default {
             }).then(result => {
                 console.log(result.body)
             })
+        this.alert('success','房间创建成功')
+        this.inputFlag = true
       }
     },
-    alert(){
-      this.$message.error('名称不能为空');
+    alert(state,str){
+      this.$message({
+        showClose : true,
+        message : str,
+        type : state
+      });
     },
     search(){
       var msg = {
@@ -94,20 +105,41 @@ export default {
               console.log(result.body)
                 console.log(result)
                 if(result.body.status===1003){
-                  console.log('erro')
+                    this.alert('error','查不到此房间')
                 }else {
                    var test = {
                     username: this.$store.getters.getName,
                     roomname : result.body.roomname
                   }
                   var roomname = this.searchRoom
+                  this.$store.commit("modifyRoomName",roomname)
                   this.$socket.emit('join',JSON.stringify(test))
                   this.$router.push({name:'roomname',params:{roomname}})
                 }
 
 
             })
-    }
+    },
+    handleAvatarSuccess(res, file) {
+        this.imageUrl = URL.createObjectURL(file.raw);
+        this.$store.commit("modifyRoomImg",this.imageUrl)
+      },
+      beforeAvatarUpload(file) {
+        if(this.roomname == ''){
+          this.alert('error',"请先注册用户，成功后再上传图片")
+          return;
+        }
+        const isJPG = file.type === 'image/jpeg';
+        const isLt2M = file.size / 1024 / 1024 < 2;
+
+        if (!isJPG) {
+          this.$message.error('上传头像图片只能是 JPG 格式!');
+        }
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 2MB!');
+        }
+        return isJPG && isLt2M;
+      },
   },
   sockets: {
         connect: function() {

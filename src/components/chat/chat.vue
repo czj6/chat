@@ -3,11 +3,12 @@
       <el-container>
     <el-header style="font-size: 12px">
       <span class="group_introduction_container">
-        <i class="fa fa-superpowers fa-2x" aria-hidden="true"></i>
+         <el-avatar size="medium" :src="roomImg"></el-avatar>
         <p class="group_introduction">
-          <span>bootstrap</span>
+          {{roomMsg.roomname}}
           <span></span>
         </p>
+        <p>在线人数：{{personnum}}</p>
       </span>
       <span class="header_icons">
         <i class="fa fa-search fa-1x" aria-hidden="true" @click="search_flag=!search_flag"></i>
@@ -26,19 +27,21 @@
     <el-main>
       <el-input
         placeholder="请输入内容"
-        prefix-icon="el-icon-search"
         v-show="search_flag"
+        v-model="searchRoom"
+        @keyup.enter = "search"
        >
+       <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
       </el-input>
       <div class="container chat" v-scroll>
         <div :class="[item.username==username?'right':'left']" v-for="item in chatText" :key="item.id">
-           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
+           <el-avatar :src="item.useravatar"></el-avatar>
           <div class="item">{{item.message}}</div>
         </div>
     </div>
     </el-main>
     <el-footer>
-      <el-input autosize placeholder="请输入内容" v-model.trim="textarea">
+      <el-input autosize placeholder="请输入内容" v-model.trim="textarea" @keyup.enter = "sendMsg">
       </el-input>
       <el-button icon="el-icon-s-promotion" circle @click="sendMsg"></el-button>
     </el-footer>
@@ -47,24 +50,29 @@
     <el-header>
       <i class="fa fa-angle-left fa-2x" aria-hidden="true" @click="flag=!flag"></i>
     </el-header>
-    <el-main>
-        <i class="fa fa-superpowers fa-2x" aria-hidden="true"></i>
-        <h5>bootstrap</h5>
-        <p>html,js,css and so on</p>
+    <el-main class="header_box">
+        <el-avatar size="large" :src="roomImg"></el-avatar>
+        <span>
+          群昵称:
+          <el-input v-model="roomMsg.roomname" :disabled="!(roomMsg.roomowner==username)"></el-input><br>
+          群链接:
+          <el-input v-model="roomMsg.roomurl"></el-input>
+        </span>
+
     </el-main>
     <el-footer>
-      photo
-      <el-card shadow="always">
-
+      <el-card shadow="always" class="msgItem">
+        群介绍:
+        <el-input v-model="roomMsg.roomdetail" :value="this.roomMsg.roomdetail" :disabled="!(roomMsg.roomowner==username)"></el-input>
       </el-card>
-      name
-      <el-card shadow="always">
-
+      <el-card shadow="always" class="msgItem">
+        <p>通过qq分享</p>
+        <p>通过微信分享</p>
+        <p>通过github分享</p>
       </el-card>
-      topic
-      <el-card shadow="always">
-
-      </el-card>
+      <el-button type="primary" size="medium"  :disabled="!(roomMsg.roomowner==username)" @click="modifyRoom">Modify</el-button>
+      <el-button type="danger" size="medium"  @click="open1" v-show="!(roomMsg.roomowner==username)">exit</el-button>
+      <el-button type="danger" size="medium"   v-show="roomMsg.roomowner==username" @click="open2">解散群聊</el-button>
     </el-footer>
   </el-container>
   </el-container>
@@ -79,7 +87,12 @@ export default {
           search_flag:false,
           roomname: this.$route.params.roomname,
           chatText:'',
-          username:this.$store.getters.getName
+          username:this.$store.getters.getName,
+          roomMsg: '',
+          userImg:this.$store.getters.getImgUrl,
+          roomImg:'',
+          searchRoom:'',
+          personnum: this.$store.getters.getPersonNum
       }
     },
     methods:{
@@ -95,8 +108,16 @@ export default {
       },
       getChatText(){
         this.$http.get('/apiv1/room/message/'+this.roomname).then(result => {
-          this.chatText = result.body.data
+          var data = result.body.data
+          // data.forEach(item => {
+          //   this.temp = this.getUserImg(item.username)
+          //   item.img = this.temp
+          //   console.log(item)
+          // });
+          this.personnum = data.onlineusers
+          this.chatText = data.msg
         })
+        console.log(this.chatText)
       },
       sendMsg(){
         if(this.textarea === ''){
@@ -106,22 +127,172 @@ export default {
         var message = {
           username:this.username,
           roomname:this.roomname,
-          message:this.textarea
+          message:this.textarea,
         }
-        this.chatText.push(message)
         this.$socket.emit('new message',JSON.stringify(message))
+        message.useravatar = this.$store.getters.getImgUrl
+        this.textarea = ''
+        this.chatText.push(message)
+      },
+      queryRoomMsg(){
+        let test = {
+        roomname: this.roomname
+        }
+       this.$http.post("/apiv1/room/query",
+              JSON.stringify(test)
+            , {
+                emulateJSON: true
+            }).then(result => {
+                this.roomMsg = result.body
+            })
+      },
+      getRoomImg(){
+         this.$http.get('/apiv1/room/avatar/download/'+this.roomname,{responseType: 'blob'}).then(result => {
+           return result.blob()
+        }).then(blob => {
+          let url = URL.createObjectURL(blob)
+          this.roomImg = url
+        })
+      },
+      getUserImg(user){
+
+        this.$http.get('/apiv1/user/avatar/download/'+user,{responseType: 'blob'}).then(result => {
+           return result.blob()
+        }).then(blob => {
+          var url = URL.createObjectURL(blob)
+          // console.log(this.temp)
+        })
+      },
+      modifyRoom(){
+        let test = {
+          roomname:this.roomMsg.roomname,
+          roomdetail:this.roomMsg.roomdetail
+        }
+        this.$http.post("/apiv1/room/query",
+              JSON.stringify(test)
+            , {
+                emulateJSON: true
+            }).then(result => {
+                 this.$store.commit("modifyRoomName",test.roomname)
+                this.queryRoomMsg()
+            })
+      },
+      search(){
+        var msg = {
+          roomname: this.searchRoom
+        }
+        this.$http.post("/apiv1/room/query",
+                JSON.stringify(msg)
+              , {
+                  emulateJSON: true
+              }).then(result => {
+                console.log(result.body)
+                  console.log(result)
+                  if(result.body.status===1003){
+                    this.alert("房间不存在")
+                    return;
+                  }
+                  if(this.$store.getters.getName ==''){
+                    this.alert("请先注册昵称")
+                  }
+                  var test = {
+                    username: this.$store.getters.getName,
+                    roomname : result.body.roomname
+                  }
+                  var roomname = this.searchRoom
+                  this.searchRoom = ''
+                  this.$socket.emit('join',JSON.stringify(test))
+                  this.$store.commit("modifyRoomName",test.roomname)
+                  this.$router.push({name:'roomname',params:{roomname}})
+
+          })
+      },
+      leave(){
+        let test = {
+          username:this.username,
+          roomname:this.roomname
+        }
+        this.$socket.emit('leave',JSON.stringify(test))
+        console.log('leave')
+        this.$store.commit("modifyRoomName",'')
+        this.$router.push({name:'ChatDefault',path:'/chat'})
+      },
+      close(){
+        let test = {
+          roomowner:this.username,
+          roomname:this.roomname
+        }
+        this.$socket.emit('close',JSON.stringify(test))
+        this.$store.commit("modifyRoomName",'')
+        this.$router.push({name:'ChatDefault',path:'/chat'})
+      },
+      open1() {
+        this.$confirm('确定退出?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$message({
+            type: 'success',
+            message: '溜了溜了!'
+          });
+          this.leave()
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '还不想走'
+          });
+        });
+      },
+      open2(){
+        this.$confirm('确定解散群聊?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$message({
+            type: 'success',
+            message: '解散了!'
+          });
+          this.close()
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '还不想解散'
+          });
+        });
       }
     },
-    beforeMount(){
+    beforeRouteUpdate(to, from, next){
+      this.roomname = to.params.roomname
       this.getChatText()
+      this.queryRoomMsg()
+      this.getRoomImg()
+      next()
+    },
+    beforeMount(){
+      this.getChatText(),
+      this.getRoomImg()
     },
     mounted() {
       this.$socket.emit('connect',"ok")
+      this.queryRoomMsg()
     },
     sockets:{
        message:function(msg){
          console.log(msg)
           var msg = JSON.parse(msg)
+          var action = msg.data.action
+          if(action == 'in' || action == 'out'){
+            this.$store.commit("modifyPersonNum",msg.data.onlineusers)
+            this.personnum = msg.data.onlineusers
+            return;
+          }
+          if(action == 'close'){
+            console.log('群主解散了')
+            this.leave()
+            return;
+          }
           this.chatText.push(msg.data)
       }
     }
@@ -156,22 +327,30 @@ export default {
 
 .group_info{
   /* background-color: pink; */
-  width: 19%;
-
+  width: 40%;
+}
+.header_box{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .group_info .el-header{
   background-color: #fff;
   align-items: center;
 }
 .group_info .el-main{
-  flex: 0.7;
+  flex: 0.3;
 }
 .group_info .el-footer{
   flex: 1;
 }
 .el-input{
-  width: 90%;
+  width: 88%;
 }
+.msgItem{
+  margin: 30px 0;
+}
+/* 聊天框 */
 .container {
     width: 100%;
     height: 520px;
@@ -186,10 +365,14 @@ export default {
     flex-basis: 100%;
     display: flex;
     flex-direction: row-reverse;
+    font-size: 12px;
+    margin: 20px 0;
+
 }
 
 .left {
     flex-basis: 100%;
+    margin: 20px 0;
 }
 
 .item{
@@ -198,6 +381,7 @@ export default {
     word-wrap: break-word;
     word-break: break-all;
     background-color: yellow;
+    border-radius: 5px;
 }
 
 /*设置滚动条样式*/
@@ -222,4 +406,5 @@ export default {
     border-radius: 0;
     background: rgba(0, 0, 0, 0.1);
 }
+
 </style>

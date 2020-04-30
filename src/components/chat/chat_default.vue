@@ -21,6 +21,7 @@
         placeholder="请输入内容"
         v-show="search_flag"
         v-model="searchRoom"
+        @keyup.enter = "search"
        >
        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
       </el-input>
@@ -50,7 +51,7 @@
 
     </el-main>
     <el-footer>
-      <el-input  autosize placeholder="请输入内容" :disabled="true" :resize="none">
+      <el-input  autosize placeholder="请输入内容" :disabled="true">
       </el-input>
       <el-button icon="el-icon-s-promotion" circle disabled></el-button>
     </el-footer>
@@ -99,6 +100,7 @@ export default {
                   }
                   var roomname = this.searchRoom
                   this.$socket.emit('join',JSON.stringify(test))
+                  this.$store.commit("modifyRoomName",roomname)
                   this.$router.push({name:'roomname',params:{roomname}})
 
           })

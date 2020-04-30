@@ -23,7 +23,10 @@ var store = new Vuex.Store({
         username: '',
         userimg: '',
         phone: '',
-        email: ''
+        email: '',
+        roomImg: '',
+        roomname: '',
+        personnum: ''
     },
     mutations: {
         modify(state, name) {
@@ -36,21 +39,39 @@ var store = new Vuex.Store({
             state.phone = phone
         },
         modifyEmail(state, email) {
-            state.userimg = email
+            state.email = email
+        },
+        modifyRoomImg(state, roomImg) {
+            state.roomImg = roomImg
+        },
+        modifyRoomName(state, roomname) {
+            state.roomname = roomname
+        },
+        modifyPersonNum(state, personnum) {
+            state.personnum = personnum
         }
     },
     getters: {
         getName(state) {
             return state.username
         },
-        getImg(state) {
-            return state.userimg
-        },
         getPhone(state) {
             return state.phone
         },
         getEmail(state) {
             return state.email
+        },
+        getImgUrl(state) {
+            return state.userimg
+        },
+        getRoomImg(state) {
+            return state.roomImg
+        },
+        getRoomName(state) {
+            return state.roomname
+        },
+        getPersonNum(state) {
+            return state.personnum
         },
     }
 })
@@ -73,8 +94,6 @@ Vue.directive('scroll', {
         el.scrollTop = el.scrollHeight
     },
     componentUpdated: function(el) {
-        console.log(el.scrollHeight)
-        console.log(el.scrollTop)
         el.scrollTop = el.scrollHeight
     }
 })

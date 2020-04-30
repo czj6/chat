@@ -9,7 +9,7 @@
   <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
       <i class="fa fa-qq fa-2x icon1" aria-hidden="true"></i>
       <router-link to="/edit" class="edit" tag="span"><i class="el-icon-edit-outline icon5" ></i></router-link>
-      <router-link to="/home" tag="span"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
+      <router-link :to="'/home/'+roomname" tag="span"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
       <router-link to="/user" tag="span"><i class="fa fa-user fa-2x icon3" aria-hidden="true"></i></router-link>
       <i class="fa fa-cog fa-2x icon4" aria-hidden="true"></i>
   </el-aside>
@@ -25,18 +25,8 @@
 import "../static/font-awesome/css/font-awesome.min.css"
 export default {
    data() {
-      const item = {
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      };
       return {
-        tableData: Array(20).fill(item),
-        test:{
-                username: '张三',
-                userdetail: '没有',
-                phone: '999999'
-            }
+        roomname:this.$store.getters.getRoomName||'',
       }
     },
     methods:{
@@ -49,7 +39,13 @@ export default {
         //         console.log(result.body)
         //     })
         // }
+        printroom(){
+          console.log(this.roomname)
+        }
     },
+    mounted(){
+      this.printroom()
+    }
 
 }
 </script>
