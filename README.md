@@ -5,6 +5,12 @@
 ## Build Setup
 
 ``` bash
+# 部署地址
+http://101.200.157.252/index
+
+# 存在问题
+开发时，双方之间socket跨域好像没处理好，前端就proxy代理好像不太行，但是部署上去就没事了
+
 # install dependencies
 npm install
 
