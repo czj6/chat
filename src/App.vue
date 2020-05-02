@@ -9,7 +9,7 @@
   <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
       <i class="fa fa-qq fa-2x icon1" aria-hidden="true"></i>
       <router-link to="/edit" class="edit" tag="span"><i class="el-icon-edit-outline icon5" ></i></router-link>
-      <router-link :to="'/home/'+roomname" tag="span"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
+      <router-link :to="'/home/'+$store.getters.getRoomName" tag="span"><i class="fa fa-comment-o fa-2x icon2" aria-hidden="true"></i></router-link>
       <router-link to="/user" tag="span"><i class="fa fa-user fa-2x icon3" aria-hidden="true"></i></router-link>
       <i class="fa fa-cog fa-2x icon4" aria-hidden="true"></i>
   </el-aside>
@@ -60,24 +60,29 @@ export default {
   position: absolute;
   left: 39%;
   top: 5%;
+  cursor: pointer;
 }
 .el-aside .icon2{
   position: absolute;
   top: 42%;
   left: 39%;
+  cursor: pointer;
 }
 .el-aside .icon3{
   position: absolute;
   top: 55%;
   left: 39%;
+  cursor: pointer;
 }
 .el-aside .icon4{
   position: absolute;
   top: 90%;
   left: 39%;
+  cursor: pointer;
 }
 .el-aside .edit{
   font-size: 32px;
+  cursor: pointer;
 }
 .el-aside .icon5{
   position: absolute;
@@ -88,5 +93,8 @@ export default {
 }
   .el-aside {
     color: #333;
+  }
+  .router-link-exact-active , .router-link-active{
+    color: #007aff;
   }
 </style>

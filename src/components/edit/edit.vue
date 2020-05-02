@@ -5,7 +5,7 @@
     <el-input
         placeholder="请输入内容"
         v-model="searchRoom"
-        @keyup.enter = "search"
+        @keyup.enter.native = "search"
        >
        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
       </el-input>

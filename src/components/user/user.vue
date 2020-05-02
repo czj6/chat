@@ -5,7 +5,7 @@
        <el-input
         placeholder="请输入内容"
         v-model="searchRoom"
-        @keyup.13 = "search"
+        @keyup.enter.native = "search"
        >
        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
        </el-input>
@@ -218,6 +218,7 @@ export default {
                   }
                   var roomname = this.searchRoom
                   this.$socket.emit('join',JSON.stringify(test))
+                  this.$store.commit("modifyRoomName",test.roomname)
                   this.$router.push({name:'roomname',params:{roomname}})
 
           })

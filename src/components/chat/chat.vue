@@ -29,19 +29,19 @@
         placeholder="请输入内容"
         v-show="search_flag"
         v-model="searchRoom"
-        @keyup.enter = "search"
+        @keyup.enter.native = "search"
        >
        <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
       </el-input>
       <div class="container chat" v-scroll>
         <div :class="[item.username==username?'right':'left']" v-for="item in chatText" :key="item.id">
-           <el-avatar :src="item.useravatar"></el-avatar>
+            <el-avatar :src="item.useravatar"></el-avatar>
           <div class="item">{{item.message}}</div>
         </div>
     </div>
     </el-main>
     <el-footer>
-      <el-input autosize placeholder="请输入内容" v-model.trim="textarea" @keyup.enter = "sendMsg">
+      <el-input autosize placeholder="请输入内容" v-model.trim="textarea" @keyup.enter.native = "sendMsg">
       </el-input>
       <el-button icon="el-icon-s-promotion" circle @click="sendMsg"></el-button>
     </el-footer>
@@ -55,8 +55,6 @@
         <span>
           群昵称:
           <el-input v-model="roomMsg.roomname" :disabled="!(roomMsg.roomowner==username)"></el-input><br>
-          群链接:
-          <el-input v-model="roomMsg.roomurl"></el-input>
         </span>
 
     </el-main>
@@ -66,20 +64,39 @@
         <el-input v-model="roomMsg.roomdetail" :value="this.roomMsg.roomdetail" :disabled="!(roomMsg.roomowner==username)"></el-input>
       </el-card>
       <el-card shadow="always" class="msgItem">
-        <p>通过qq分享</p>
-        <p>通过微信分享</p>
-        <p>通过github分享</p>
+        <!-- 这个是copy to share  -->
+        <textarea id="bar" style="border:0;border-radius:5px;background-color:rgba(241,241,241,.98);width: 80%;height: 70px;padding: 10px;resize: none;" v-model="roomMsg.roomurl"></textarea>
+        <el-button type="primary" icon="el-icon-copy-document" class="btn" data-clipboard-target="#bar">copy to share</el-button>
       </el-card>
       <el-button type="primary" size="medium"  :disabled="!(roomMsg.roomowner==username)" @click="modifyRoom">Modify</el-button>
       <el-button type="danger" size="medium"  @click="open1" v-show="!(roomMsg.roomowner==username)">exit</el-button>
       <el-button type="danger" size="medium"   v-show="roomMsg.roomowner==username" @click="open2">解散群聊</el-button>
     </el-footer>
   </el-container>
+  <el-dialog title="用户信息" :visible.sync="dialogFlag">
+  <el-form>
+    <el-form-item label="昵称">
+      <el-input  autocomplete="off" v-model="username"></el-input>
+    </el-form-item>
+    <el-form-item label="邮箱">
+      <el-input  autocomplete="off" v-model="email"></el-input>
+    </el-form-item>
+    <el-form-item label="电话">
+      <el-input  autocomplete="off" v-model="phone"></el-input>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="cancelDialog">取 消</el-button>
+    <el-button type="primary" @click="confirmDialog">确 定</el-button>
+  </div>
+</el-dialog>
   </el-container>
 
 </template>
 <script>
+import Clipboard from 'clipboard';
 export default {
+
     data(){
       return {
           flag:false,
@@ -92,7 +109,10 @@ export default {
           userImg:this.$store.getters.getImgUrl,
           roomImg:'',
           searchRoom:'',
-          personnum: this.$store.getters.getPersonNum
+          personnum: this.$store.getters.getPersonNum,
+          dialogFlag:'',
+          email:this.$store.getters.getEmail,
+          phone:this.$store.getters.getPhone
       }
     },
     methods:{
@@ -103,8 +123,12 @@ export default {
         // this.$message('click on item ' + command);
         this.flag = !this.flag
       },
-      alert(str){
-      this.$message.error(str);
+      alert(state,str){
+        this.$message({
+          showClose : true,
+          message : str,
+          type : state
+        });
       },
       getChatText(){
         this.$http.get('/apiv1/room/message/'+this.roomname).then(result => {
@@ -121,7 +145,7 @@ export default {
       },
       sendMsg(){
         if(this.textarea === ''){
-          this.alert("发送的内容不能为空")
+          this.alert("warning","发送的内容不能为空")
           return;
         }
         var message = {
@@ -189,11 +213,11 @@ export default {
                 console.log(result.body)
                   console.log(result)
                   if(result.body.status===1003){
-                    this.alert("房间不存在")
+                    this.alert("error","房间不存在")
                     return;
                   }
                   if(this.$store.getters.getName ==''){
-                    this.alert("请先注册昵称")
+                    this.alert("warning","请先注册昵称")
                   }
                   var test = {
                     username: this.$store.getters.getName,
@@ -261,6 +285,46 @@ export default {
             message: '还不想解散'
           });
         });
+      },
+      dialogIsOpen(){
+        if(this.username == ''){
+          this.dialogFlag = true
+        }else{
+          this.dialogFlag = false
+        }
+      },
+      confirmDialog(){
+        if(this.username == ''){
+          this.alert("error","用户名不能为空")
+          this.dialogFlag = true
+        }
+        else{
+          let test = {
+            username: this.username,
+            phone: this.phone,
+            email:this.email
+          }
+          this.$store.commit("modify",this.username)
+          this.$store.commit("modifyPhone",this.phone)
+          this.$store.commit("modifyEmail",this.email)
+          let url = '/apiv1/user/register'
+          this.$http.post(url,
+                JSON.stringify(test)
+              , {
+                  emulateJSON: true
+              }).then(result => {
+                  console.log(result.body)
+                  console.log(this.$store.getters.getName)
+              })
+          this.alert("success","注册成功")
+          this.$socket.emit('join',JSON.stringify(test))
+          this.$store.commit("modifyRoomName",this.$route.params.roomname)
+          this.dialogFlag = false
+        }
+      },
+      cancelDialog(){
+          this.alert("error","熊孩子，还不快注册！")
+          this.dialogFlag = true
       }
     },
     beforeRouteUpdate(to, from, next){
@@ -271,10 +335,12 @@ export default {
       next()
     },
     beforeMount(){
+      this.dialogIsOpen()
       this.getChatText(),
       this.getRoomImg()
     },
     mounted() {
+      const clipboard = new Clipboard('.btn');
       this.$socket.emit('connect',"ok")
       this.queryRoomMsg()
     },
@@ -314,7 +380,7 @@ export default {
 .el-header .group_introduction_container{
   display: flex;
   justify-content: space-between;
-  width: 15%;
+  width: 41%;
   align-items: center;
 }
 .el-header .header_icons{
