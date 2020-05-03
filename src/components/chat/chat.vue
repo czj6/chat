@@ -317,7 +317,11 @@ export default {
                   console.log(this.$store.getters.getName)
               })
           this.alert("success","注册成功")
-          this.$socket.emit('join',JSON.stringify(test))
+          var msg = {
+                    username: this.$store.getters.getName,
+                    roomname : this.$route.params.roomname
+                  }
+          this.$socket.emit('join',JSON.stringify(msg))
           this.$store.commit("modifyRoomName",this.$route.params.roomname)
           this.dialogFlag = false
         }
